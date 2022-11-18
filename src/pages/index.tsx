@@ -2,8 +2,6 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
-import { slugify } from "../utils/slugify";
-
 import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
