@@ -10,48 +10,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Example {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model Asset {
-  id           String         @id @default(cuid())
-  name         String
-  path         String
-  size         Int
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  Category     Category[]
-  ProductAsset ProductAsset[]
+  id             String        @id @default(cuid())
+  productAssetId String?
+  name           String
+  path           String
+  size           Int
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  category       Category?
+  ProductAsset   ProductAsset? @relation(fields: [productAssetId], references: [id])
 }
 
 model Category {
   id            String   @id @default(cuid())
   category_name String
   category_slug String
-  assetId       String
+  assetId       String   @unique
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   asset_id      Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
 }
 
 model Product {
-  id           String         @id @default(cuid())
+  id           String        @id @default(cuid())
   product_name String
   product_slug String
   price        Int
   description  String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  ProductAsset ProductAsset[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  productAsset ProductAsset?
 }
 
 model ProductAsset {
   id         String  @id @default(cuid())
-  assetId    String
-  productId  String
+  assetId    Asset[]
+  productId  String  @unique
   product_id Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  asset_id   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
 }
