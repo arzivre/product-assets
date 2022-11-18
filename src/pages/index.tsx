@@ -14,7 +14,9 @@ const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
 
   const utils = trpc.useContext();
-  const productAsset = trpc.productAsset.getAll.useQuery();
+  const productAsset = trpc.productAsset.getAll.useQuery(undefined, {
+    keepPreviousData: true,
+  });
   const deleteItem = trpc.productAsset.delete.useMutation({
     onSettled() {
       utils.productAsset.getAll.invalidate();

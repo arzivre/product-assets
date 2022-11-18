@@ -4,9 +4,9 @@ import { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
 
-const AssetPage = () => {
+const ProductPage = () => {
   const [loading, setLoading] = useState();
-  const assets = trpc.asset.getAll.useQuery(undefined, {
+  const products = trpc.product.getAll.useQuery(undefined, {
     keepPreviousData: true,
   });
 
@@ -18,24 +18,20 @@ const AssetPage = () => {
             <tr>
               <th className="border">No</th>
               <th className="border">Name</th>
-              <th className="border">size</th>
-              <th className="border">path</th>
-              <th className="border">Image</th>
+              <th className="border">slug</th>
+              <th className="border">price</th>
+              <th className="border">description</th>
               <th className="border">Action</th>
             </tr>
           </thead>
           <tbody>
-            {assets.data?.map((asset, index) => (
-              <tr key={asset.id}>
+            {products.data?.map((product, index) => (
+              <tr key={product.id}>
                 <td className="border">{index + 1}</td>
-                <td className="border">{asset.name}</td>
-                <td className="border">{asset.size}</td>
-                <td className="border">{asset.path}</td>
-                <td className="border">
-                  <picture>
-                    <img src={asset.path} alt={asset.name} />
-                  </picture>
-                </td>
+                <td className="border">{product.product_name}</td>
+                <td className="border">{product.product_slug}</td>
+                <td className="border">{product.price}</td>
+                <td className="border">{product.description}</td>
                 <td className="border">
                   <div className="flex gap-4 px-2">
                     <button
@@ -63,4 +59,4 @@ const AssetPage = () => {
   );
 };
 
-export default AssetPage;
+export default ProductPage;
