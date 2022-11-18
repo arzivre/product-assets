@@ -7,19 +7,21 @@ import { slugify } from "../utils/slugify";
 import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
-  const utils = trpc.useContext();
-  const productAsset = trpc.productAsset.getAll.useQuery();
-  const create = trpc.productAsset.create.useMutation({
-    onSettled() {
-      utils.productAsset.getAll.invalidate();
-    },
-  });
-
   const [name, setName] = useState("");
   const [price, setPrice] = useState("1");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [imgsSrc, setImgsSrc] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const utils = trpc.useContext();
+  const productAsset = trpc.productAsset.getAll.useQuery();
+  const create = trpc.productAsset.create.useMutation({
+    onSettled() {
+      utils.productAsset.getAll.invalidate();
+      setLoading(false);
+    },
+  });
 
   function onChangeFile(e: ChangeEvent<HTMLInputElement>) {
     if (!e.target.files) return;
@@ -37,6 +39,7 @@ const Home: NextPage = () => {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
     const data = {
       name,
       price: Number(price),
@@ -46,6 +49,15 @@ const Home: NextPage = () => {
     };
     const res = create.mutate(data);
     console.log(res);
+    reset();
+  }
+
+  function reset() {
+    setName("");
+    setCategory("");
+    setPrice("");
+    setDescription("");
+    setImgsSrc([]);
   }
 
   return (
@@ -99,8 +111,9 @@ const Home: NextPage = () => {
                 </picture>
               ))}
           </section>
-          <button type="submit">Submit</button>
+          <button type="submit">{loading ? "Loading..." : "Submit"}</button>
         </form>
+        <section>{JSON.stringify(productAsset.data)}</section>
       </main>
     </>
   );

@@ -1,10 +1,8 @@
-import { z } from "zod";
-import { slugify } from "../../../utils/slugify";
-
-import { router, publicProcedure } from "../trpc";
 import { v2 as cloudinary } from "cloudinary";
+import { z } from "zod";
 import { env } from "../../../env/server.mjs";
-import { describe } from "node:test";
+import { slugify } from "../../../utils/slugify";
+import { publicProcedure, router } from "../trpc";
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_NAME,
@@ -14,8 +12,41 @@ cloudinary.config({
 
 export const productAssetRouter = router({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.productAsset.findMany();
+    return ctx.prisma.productAsset.findMany({
+      include: { product_id: true, asset_id: true },
+    });
   }),
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        price: z.number(),
+        category: z.string(),
+        description: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // TODO: feature update image
+      return ctx.prisma.productAsset.update({
+        where: { id: input.id },
+        data: {
+          product_id: {
+            update: {
+              product_name: input.name,
+              product_slug: slugify(input.name),
+              price: input.price,
+              description: input.description,
+            },
+          },
+        },
+      });
+    }),
+  delete: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.productAsset.delete({ where: { id: input.id } });
+    }),
   create: publicProcedure
     .input(
       z.object({
@@ -43,13 +74,12 @@ export const productAssetRouter = router({
           name: result.public_id,
           path: result.secure_url,
           size: result.bytes,
-          category: input.category,
         });
       }
 
-      // const assets = await ctx.prisma.asset.createMany({
-      //   data: inTheCloud,
-      // });
+      await ctx.prisma.asset.createMany({
+        data: inTheCloud,
+      });
 
       return ctx.prisma.productAsset.create({
         data: {
@@ -62,10 +92,7 @@ export const productAssetRouter = router({
             },
           },
           asset_id: {
-            create: [
-              { name: "", size: 1213, path: "sd" },
-              { name: "", size: 1213, path: "sd" },
-            ],
+            create: inTheCloud,
           },
         },
         include: {
@@ -73,6 +100,5 @@ export const productAssetRouter = router({
           asset_id: true,
         },
       });
-      // return assets;
     }),
 });
