@@ -4,14 +4,7 @@ import Head from "next/head";
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
-
-interface NewProductAsset {
-  data: ProductAsset & {
-    asset_id: Asset[];
-    product_id: Product;
-  };
-}
-
+ 
 const Home: NextPage = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("1");
