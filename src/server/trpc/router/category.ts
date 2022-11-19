@@ -12,7 +12,7 @@ cloudinary.config({
 
 export const categoryRouter = router({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.category.findMany();
+    return ctx.prisma.category.findMany({ include: { assetId: true } });
   }),
   delete: publicProcedure
     .input(z.object({ id: z.string() }))
@@ -24,25 +24,31 @@ export const categoryRouter = router({
       z.object({
         id: z.string(),
         name: z.string(),
-        assetId: z.string(),
+        files: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const oldData = ctx.prisma.asset.findUnique({
+        where: { id: input.id },
+      });
+      //TODO: create function to delete image in cloudinary
+      const result = await cloudinary.uploader.upload(input.files, {
+        folder: "harisenin",
+        use_filename: true,
+      });
       return ctx.prisma.category.update({
         where: { id: input.id },
         data: {
           category_name: input.name,
           category_slug: slugify(input.name),
-          asset_id: input.assetId,
+          asset_id: input.id,
         },
       });
     }),
   create: publicProcedure
     .input(
       z.object({
-        id: z.string(),
         name: z.string(),
-        assetId: z.string(),
         files: z.string(),
       })
     )
