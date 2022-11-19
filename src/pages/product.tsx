@@ -72,7 +72,7 @@ const ProductPage = () => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="mr-4 flex justify-between">
             <h2 className="text-2xl font-bold uppercase ">
-              Create Product Asset
+              Create Product 
             </h2>
             <button
               onClick={() => setShowForm(false)}
@@ -111,7 +111,7 @@ const ProductPage = () => {
 
       {!showForm && !showFormUpdate && (
         <div className="mr-4 flex justify-between pb-4">
-          <h2 className="text-2xl font-bold uppercase ">Product Asset</h2>
+          <h2 className="text-2xl font-bold uppercase ">Product  </h2>
           <button
             onClick={() => setShowForm(true)}
             className="rounded bg-green-300 px-4 py-2 text-green-900 hover:bg-green-400"
@@ -219,7 +219,7 @@ const Update = ({ data, setShow }: UpdateProps) => {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="mr-4 flex justify-between">
           <h2 className="text-2xl font-bold uppercase ">
-            Create Product Asset
+            Update Product 
           </h2>
           <button
             onClick={() => setShow(false)}

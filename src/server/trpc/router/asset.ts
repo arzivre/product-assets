@@ -18,6 +18,33 @@ export const assetRouter = router({
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.asset.delete({ where: { id: input.id } });
     }),
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().nullable(),
+        files: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const oldData = ctx.prisma.asset.findUnique({
+        where: { id: input.id },
+      });
+      //TODO: create function to delete image in cloudinary
+      const result = await cloudinary.uploader.upload(input.files, {
+        folder: "harisenin",
+        use_filename: true,
+      });
+
+      return ctx.prisma.asset.update({
+        where: { id: input.id },
+        data: {
+          name: input.name ? input.name : result.public_id,
+          path: result.secure_url,
+          size: result.bytes,
+        },
+      });
+    }),
   create: publicProcedure
     .input(
       z.object({
