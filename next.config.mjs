@@ -9,9 +9,14 @@
 const config = {
   reactStrictMode: true,
   swcMinify: true,
+  images: {
+    loader: "cloudinary",
+    domains: ["res.cloudinary.com"],
+    path: "https://res.cloudinary.com/<cloudinary-id>/image/upload",
+  },
   i18n: {
-    locales: ["en"],
-    defaultLocale: "en",
+    locales: ["id"],
+    defaultLocale: "id",
   },
 };
 export default config;
