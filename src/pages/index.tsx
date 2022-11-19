@@ -5,15 +5,27 @@ import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
 
+interface NewProductAsset {
+  data: ProductAsset & {
+    asset_id: Asset[];
+    product_id: Product;
+  };
+}
+
 const Home: NextPage = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("1");
   const [description, setDescription] = useState("");
   const [imgsSrc, setImgsSrc] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [selectItem, setSelectItem] = useState<any>();
   const [showFormUpdate, setShowFormUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectItem, setSelectItem] = useState<
+    ProductAsset & {
+      asset_id: Asset[];
+      product_id: Product;
+    }
+  >();
 
   const utils = trpc.useContext();
   const productAsset = trpc.productAsset.getAll.useQuery(undefined, {
@@ -45,10 +57,12 @@ const Home: NextPage = () => {
     }
   }
 
-  function handleUpdate(data: ProductAsset & {
-    asset_id: Asset[];
-    product_id: Product;
-  }) {
+  function handleUpdate(
+    data: ProductAsset & {
+      asset_id: Asset[];
+      product_id: Product;
+    }
+  ) {
     setSelectItem(data);
     setShowFormUpdate(true);
   }
@@ -218,7 +232,15 @@ const Home: NextPage = () => {
         </section>
       )}
       {showFormUpdate && (
-        <Update data={selectItem} setShow={setShowFormUpdate} />
+        <Update
+          data={
+            selectItem as ProductAsset & {
+              asset_id: Asset[];
+              product_id: Product;
+            }
+          }
+          setShow={setShowFormUpdate}
+        />
       )}
     </main>
   );
@@ -279,7 +301,7 @@ const Update = ({ setShow, data }: UpdateProps) => {
     setDescription("");
     setImgsSrc([]);
     setLoading(false);
-    setShow(false)
+    setShow(false);
   }
 
   return (

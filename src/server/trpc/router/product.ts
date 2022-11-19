@@ -17,7 +17,6 @@ export const productRouter = router({
         id: z.string(),
         name: z.string(),
         price: z.number(),
-        category: z.string(),
         description: z.string(),
       })
     )
@@ -37,7 +36,6 @@ export const productRouter = router({
       z.object({
         name: z.string(),
         price: z.number(),
-        category: z.string(),
         description: z.string(),
       })
     )
