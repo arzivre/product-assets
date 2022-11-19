@@ -4,7 +4,7 @@ import Head from "next/head";
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
- 
+
 const Home: NextPage = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("1");
@@ -161,7 +161,7 @@ const Home: NextPage = () => {
             className="rounded bg-green-300 px-4 py-2 text-green-900 hover:bg-green-400"
             disabled={loading}
           >
-            Create
+            {productAsset.isLoading ? "Loading" : "Create"}
           </button>
         </div>
       )}
@@ -256,7 +256,7 @@ const Update = ({ setShow, data }: UpdateProps) => {
   const utils = trpc.useContext();
   const update = trpc.productAsset.update.useMutation({
     onSettled() {
-      utils.productAsset.invalidate();
+      utils.productAsset.getAll.invalidate();
     },
   });
 
@@ -283,6 +283,7 @@ const Update = ({ setShow, data }: UpdateProps) => {
       price: Number(price),
       description: description as string,
       files: imgsSrc as string[],
+      oldFilesId: data.asset_id.map((data) => data.name), //* Image public_id
     };
     update.mutate(input);
     reset();

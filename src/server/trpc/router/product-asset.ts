@@ -39,12 +39,17 @@ export const productAssetRouter = router({
         price: z.number(),
         description: z.string(),
         files: z.array(z.string()),
+        oldFilesId: z.array(z.string()),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const inTheCloud = [];
+      //! DELETE old image
+      for (const file of input.oldFilesId) {
+        await cloudinary.uploader.destroy(file);
+      }
+      //* Upload New Image
+      const inTheCloud = []; //* Save image url
       const files = input.files;
-
       for (const file of files) {
         const result = await uploader(file);
         inTheCloud.push({
@@ -54,6 +59,7 @@ export const productAssetRouter = router({
         });
       }
 
+      //* Update Database
       return ctx.prisma.productAsset.update({
         where: { id: input.id },
         data: {
@@ -66,6 +72,7 @@ export const productAssetRouter = router({
             },
           },
           asset_id: {
+            deleteMany: {},
             create: inTheCloud,
           },
         },
@@ -90,10 +97,9 @@ export const productAssetRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const inTheCloud = [];
-      const files = input.files;
-
-      for (const file of files) {
+      //* Upload Image
+      const inTheCloud = []; //* Save Image url
+      for (const file of input.files) {
         const result = await uploader(file);
         inTheCloud.push({
           name: result.public_id,

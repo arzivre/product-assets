@@ -1,4 +1,4 @@
-import type { Category } from "@prisma/client";
+import type { Asset, Category } from "@prisma/client";
 import Head from "next/head";
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { useState } from "react";
@@ -9,7 +9,11 @@ const ProductPage = () => {
   const [imgsSrc, setImgsSrc] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
   const [showFormUpdate, setShowFormUpdate] = useState(false);
-  const [selectItem, setSelectItem] = useState<Category>();
+  const [selectItem, setSelectItem] = useState<
+    Category & {
+      assetId: Asset;
+    }
+  >();
   const [loading, setLoading] = useState(false);
 
   const utils = trpc.useContext();
@@ -18,12 +22,12 @@ const ProductPage = () => {
   });
   const deleteItem = trpc.category.delete.useMutation({
     onSettled() {
-      utils.category.invalidate();
+      utils.category.getAll.invalidate();
     },
   });
   const create = trpc.category.create.useMutation({
     onSettled() {
-      utils.category.invalidate();
+      utils.category.getAll.invalidate();
     },
   });
 
@@ -41,7 +45,11 @@ const ProductPage = () => {
     }
   }
 
-  function handleUpdate(data: Category) {
+  function handleUpdate(
+    data: Category & {
+      assetId: Asset;
+    }
+  ) {
     setSelectItem(data);
     setShowFormUpdate(true);
   }
@@ -114,7 +122,7 @@ const ProductPage = () => {
             className="rounded bg-green-300 px-4 py-2 text-green-900 hover:bg-green-400"
             disabled={loading}
           >
-            Create
+            {categorys.isFetching ? "Loading..." : "Create"}
           </button>
         </div>
       )}
@@ -176,13 +184,22 @@ const ProductPage = () => {
       )}
 
       {showFormUpdate && (
-        <Update data={selectItem as Category} setShow={setShowFormUpdate} />
+        <Update
+          data={
+            selectItem as Category & {
+              assetId: Asset;
+            }
+          }
+          setShow={setShowFormUpdate}
+        />
       )}
     </main>
   );
 };
 interface UpdateProps {
-  data: Category;
+  data: Category & {
+    assetId: Asset;
+  };
   setShow: Dispatch<SetStateAction<boolean>>;
 }
 const Update = ({ data, setShow }: UpdateProps) => {
@@ -193,7 +210,7 @@ const Update = ({ data, setShow }: UpdateProps) => {
   const utils = trpc.useContext();
   const update = trpc.category.update.useMutation({
     onSettled() {
-      utils.product.invalidate();
+      utils.category.getAll.invalidate();
     },
   });
 
@@ -218,6 +235,8 @@ const Update = ({ data, setShow }: UpdateProps) => {
       id: data.id,
       name,
       files: imgsSrc,
+      assetId: data.assetId.id,
+      oldFile: data.assetId.path,
     };
     update.mutate(input);
     reset();
@@ -249,6 +268,30 @@ const Update = ({ data, setShow }: UpdateProps) => {
           onChange={(e) => setName(e.target.value)}
         />
         <input type="file" placeholder="Image" onChange={onChangeFile} />
+        <section className="flex flex-col">
+          <h3>Old Image</h3>
+          <div className="flex flex-row  justify-between">
+            <picture>
+              <img
+                src={data.assetId.path}
+                alt="preview image"
+                className="h-[100px] w-[100px]"
+              />
+            </picture>
+          </div>
+          <h3>New Image</h3>
+          <div className="flex flex-row  justify-between">
+            {imgsSrc && (
+              <picture>
+                <img
+                  src={imgsSrc}
+                  alt="preview image"
+                  className="h-[100px] w-[100px]"
+                />
+              </picture>
+            )}
+          </div>
+        </section>
         <button
           type="submit"
           className="rounded bg-green-300 px-4 py-2 text-green-900 hover:bg-green-400"

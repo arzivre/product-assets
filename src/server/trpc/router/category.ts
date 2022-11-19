@@ -25,23 +25,33 @@ export const categoryRouter = router({
         id: z.string(),
         name: z.string(),
         files: z.string(),
+        assetId: z.string(),
+        oldFile: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const oldData = ctx.prisma.asset.findUnique({
-        where: { id: input.id },
-      });
-      //TODO: create function to delete image in cloudinary
+      await cloudinary.uploader.destroy(input.oldFile);
+
       const result = await cloudinary.uploader.upload(input.files, {
         folder: "harisenin",
         use_filename: true,
       });
+
+      const newAsset = await ctx.prisma.asset.update({
+        where: { id: input.assetId },
+        data: {
+          name: result.public_id,
+          path: result.secure_url,
+          size: result.bytes,
+        },
+      });
+
       return ctx.prisma.category.update({
         where: { id: input.id },
         data: {
           category_name: input.name,
           category_slug: slugify(input.name),
-          asset_id: input.id,
+          asset_id: newAsset.id,
         },
       });
     }),

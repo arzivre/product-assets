@@ -21,12 +21,12 @@ const ProductPage = () => {
 
   const deleteItem = trpc.product.delete.useMutation({
     onSettled() {
-      utils.product.invalidate();
+      utils.product.getAll.invalidate();
     },
   });
   const create = trpc.product.create.useMutation({
     onSettled() {
-      utils.product.invalidate();
+      utils.product.getAll.invalidate();
     },
   });
 
@@ -189,7 +189,7 @@ const Update = ({ data, setShow }: UpdateProps) => {
   const utils = trpc.useContext();
   const update = trpc.product.update.useMutation({
     onSettled() {
-      utils.product.invalidate();
+      utils.product.getAll.invalidate();
     },
   });
 
