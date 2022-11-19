@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import { Input } from "postcss";
 import { z } from "zod";
 import { env } from "../../../env/server.mjs";
 import { slugify } from "../../../utils/slugify";
@@ -10,24 +11,50 @@ cloudinary.config({
   api_secret: env.CLOUDINARY_API_SECRET,
 });
 
+const uploader = async (file: string) => {
+  return await cloudinary.uploader.upload(file, {
+    folder: "harisenin",
+    use_filename: true,
+  });
+};
+
 export const productAssetRouter = router({
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.prisma.productAsset.findMany({
       include: { product_id: true, asset_id: true },
     });
   }),
+  getOne: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.productAsset.findUnique({
+        where: { id: input.id },
+        include: { product_id: true, asset_id: true },
+      });
+    }),
   update: publicProcedure
     .input(
       z.object({
         id: z.string(),
         name: z.string(),
         price: z.number(),
-        category: z.string(),
         description: z.string(),
+        files: z.array(z.string()),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: feature update image
+      const inTheCloud = [];
+      const files = input.files;
+
+      for (const file of files) {
+        const result = await uploader(file);
+        inTheCloud.push({
+          name: result.public_id,
+          path: result.secure_url,
+          size: result.bytes,
+        });
+      }
+
       return ctx.prisma.productAsset.update({
         where: { id: input.id },
         data: {
@@ -39,6 +66,13 @@ export const productAssetRouter = router({
               description: input.description,
             },
           },
+          asset_id: {
+            create: inTheCloud,
+          },
+        },
+        include: {
+          product_id: true,
+          asset_id: true,
         },
       });
     }),
@@ -52,19 +86,11 @@ export const productAssetRouter = router({
       z.object({
         name: z.string(),
         price: z.number(),
-        category: z.string(),
         description: z.string(),
         files: z.array(z.string()),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const uploader = async (file: string) => {
-        return await cloudinary.uploader.upload(file, {
-          folder: "harisenin",
-          use_filename: true,
-        });
-      };
-
       const inTheCloud = [];
       const files = input.files;
 
@@ -76,10 +102,6 @@ export const productAssetRouter = router({
           size: result.bytes,
         });
       }
-
-      await ctx.prisma.asset.createMany({
-        data: inTheCloud,
-      });
 
       return ctx.prisma.productAsset.create({
         data: {

@@ -6,7 +6,7 @@ import { trpc } from "../utils/trpc";
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <Layout>
-      <Component {...pageProps} />;
+      <Component {...pageProps} />
     </Layout>
   );
 };
